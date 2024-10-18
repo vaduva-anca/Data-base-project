@@ -1,0 +1,329 @@
+Declaring and Initializing Objects in PL/SQL
+Using PL/SQL With Object Types
+ 
+-- Authors table
+CREATE TABLE Authors (
+    AuthorID NUMBER PRIMARY KEY,
+    AuthorName VARCHAR2(100)
+);
+ 
+-- Books table
+CREATE TABLE Books (
+    ISBN VARCHAR2(20) PRIMARY KEY,
+    Title VARCHAR2(200),
+    AuthorID NUMBER,
+    Genre VARCHAR2(100),
+    Price NUMBER(10,2),
+    StockQuantity NUMBER,
+    FOREIGN KEY (AuthorID) REFERENCES Authors(AuthorID)
+);
+ 
+-- Customers table
+CREATE TABLE Customers (
+    CustomerID NUMBER PRIMARY KEY,
+    Name VARCHAR2(100),
+    Email VARCHAR2(100),
+    Address VARCHAR2(200),
+    Phone VARCHAR2(20)
+);
+ 
+-- Orders table
+CREATE TABLE Orders (
+    OrderID NUMBER PRIMARY KEY,
+    CustomerID NUMBER,
+    OrderDate DATE,
+    TotalAmount NUMBER(10,2),
+    Status VARCHAR2(50),
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
+);
+ 
+-- OrderDetails table
+CREATE TABLE OrderDetails (
+    OrderDetailID NUMBER PRIMARY KEY,
+    OrderID NUMBER,
+    ISBN VARCHAR2(20),
+    Quantity NUMBER,
+    UnitPrice NUMBER(10,2),
+    TotalPrice NUMBER(10,2),
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
+    FOREIGN KEY (ISBN) REFERENCES Books(ISBN)
+);
+ 
+CREATE OR REPLACE TYPE Author_typ AS OBJECT (
+    AuthorID NUMBER,
+    AuthorName VARCHAR2(100),
+    CONSTRUCTOR FUNCTION Author_typ RETURN SELF AS RESULT,
+    MEMBER PROCEDURE displayAuthor
+);
+/
+ 
+-- Define constructor for Author class
+CREATE OR REPLACE TYPE BODY Author_typ AS
+    CONSTRUCTOR FUNCTION Author_typ RETURN SELF AS RESULT IS
+    BEGIN
+        SELF.AuthorID := NULL;
+        SELF.AuthorName := NULL;
+        RETURN;
+    END;
+    MEMBER PROCEDURE displayAuthor IS
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('Author ID: ' || SELF.AuthorID || ', Name: ' || SELF.AuthorName);
+    END;
+END;
+/
+ 
+-- Define Book class
+CREATE OR REPLACE TYPE Book_typ AS OBJECT (
+    ISBN VARCHAR2(20),
+    Title VARCHAR2(200),
+    AuthorID NUMBER,
+    Genre VARCHAR2(100),
+    Price NUMBER(10,2),
+    StockQuantity NUMBER,
+    CONSTRUCTOR FUNCTION Book_typ RETURN SELF AS RESULT,
+    MEMBER PROCEDURE displayBook
+);
+/
+ 
+-- Define constructor for Book class
+CREATE OR REPLACE TYPE BODY Book_typ AS
+    CONSTRUCTOR FUNCTION Book_typ RETURN SELF AS RESULT IS
+    BEGIN
+        SELF.ISBN := NULL;
+        SELF.Title := NULL;
+        SELF.AuthorID := NULL;
+        SELF.Genre := NULL;
+        SELF.Price := NULL;
+        SELF.StockQuantity := NULL;
+        RETURN;
+    END;
+    MEMBER PROCEDURE displayBook IS
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('ISBN: ' || SELF.ISBN || ', Title: ' || SELF.Title || ', Author ID: ' || SELF.AuthorID || ', Genre: ' || SELF.Genre || ', Price: ' || SELF.Price || ', Stock Quantity: ' || SELF.StockQuantity);
+    END;
+END;
+/
+ 
+-- Define Customer class
+CREATE OR REPLACE TYPE Customer_typ AS OBJECT (
+    CustomerID NUMBER,
+    Name VARCHAR2(100),
+    Email VARCHAR2(100),
+    Address VARCHAR2(200),
+    Phone VARCHAR2(20),
+    CONSTRUCTOR FUNCTION Customer_typ RETURN SELF AS RESULT,
+    MEMBER PROCEDURE displayCustomer
+);
+/
+ 
+-- Define constructor for Customer class
+CREATE OR REPLACE TYPE BODY Customer_typ AS
+    CONSTRUCTOR FUNCTION Customer_typ RETURN SELF AS RESULT IS
+    BEGIN
+        SELF.CustomerID := NULL;
+        SELF.Name := NULL;
+        SELF.Email := NULL;
+        SELF.Address := NULL;
+        SELF.Phone := NULL;
+        RETURN;
+    END;
+    MEMBER PROCEDURE displayCustomer IS
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('Customer ID: ' || SELF.CustomerID || ', Name: ' || SELF.Name || ', Email: ' || SELF.Email || ', Address: ' || SELF.Address || ', Phone: ' || SELF.Phone);
+    END;
+END;
+/
+ 
+-- Define Order class
+CREATE OR REPLACE TYPE Order_typ AS OBJECT (
+    OrderID NUMBER,
+    CustomerID NUMBER,
+    OrderDate DATE,
+    TotalAmount NUMBER(10,2),
+    Status VARCHAR2(50),
+    CONSTRUCTOR FUNCTION Order_typ RETURN SELF AS RESULT,
+    MEMBER PROCEDURE displayOrder
+);
+/
+ 
+-- Define constructor for Order class
+CREATE OR REPLACE TYPE BODY Order_typ AS
+    CONSTRUCTOR FUNCTION Order_typ RETURN SELF AS RESULT IS
+    BEGIN
+        SELF.OrderID := NULL;
+        SELF.CustomerID := NULL;
+        SELF.OrderDate := NULL;
+        SELF.TotalAmount := NULL;
+        SELF.Status := NULL;
+        RETURN;
+    END;
+    MEMBER PROCEDURE displayOrder IS
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('Order ID: ' || SELF.OrderID || ', Customer ID: ' || SELF.CustomerID || ', Order Date: ' || TO_CHAR(SELF.OrderDate, 'DD-MON-YYYY') || ', Total Amount: ' || SELF.TotalAmount || ', Status: ' || SELF.Status);
+    END;
+END;
+/
+ 
+-- Define OrderDetail class
+CREATE OR REPLACE TYPE OrderDetail_typ AS OBJECT (
+    OrderDetailID NUMBER,
+    OrderID NUMBER,
+    ISBN VARCHAR2(20),
+    Quantity NUMBER,
+    UnitPrice NUMBER(10,2),
+    TotalPrice NUMBER(10,2),
+    CONSTRUCTOR FUNCTION OrderDetail_typ RETURN SELF AS RESULT,
+    MEMBER PROCEDURE displayOrderDetail
+);
+/
+ 
+-- Define constructor for OrderDetail class
+CREATE OR REPLACE TYPE BODY OrderDetail_typ AS
+    CONSTRUCTOR FUNCTION OrderDetail_typ RETURN SELF AS RESULT IS
+    BEGIN
+        SELF.OrderDetailID := NULL;
+        SELF.OrderID := NULL;
+        SELF.ISBN := NULL;
+        SELF.Quantity := NULL;
+        SELF.UnitPrice := NULL;
+        SELF.TotalPrice := NULL;
+        RETURN;
+    END;
+    MEMBER PROCEDURE displayOrderDetail IS
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('Order Detail ID: ' || SELF.OrderDetailID || ', Order ID: ' || SELF.OrderID || ', ISBN: ' || SELF.ISBN || ', Quantity: ' || SELF.Quantity || ', Unit Price: ' || SELF.UnitPrice || ', Total Price: ' || SELF.TotalPrice);
+    END;
+END;
+/
+ 
+ 
+ 
+ 
+CREATE OR REPLACE PROCEDURE InsertAuthor(
+    p_AuthorID IN Authors.AuthorID%TYPE,
+    p_AuthorName IN Authors.AuthorName%TYPE
+)
+IS
+BEGIN
+    INSERT INTO Authors (AuthorID, AuthorName) VALUES (p_AuthorID, p_AuthorName);
+    COMMIT;
+END InsertAuthor;
+/
+ 
+CREATE OR REPLACE PROCEDURE UpdateAuthor(
+    p_AuthorID IN Authors.AuthorID%TYPE,
+    p_AuthorName IN Authors.AuthorName%TYPE
+)
+IS
+BEGIN
+    UPDATE Authors SET AuthorName = p_AuthorName WHERE AuthorID = p_AuthorID;
+    COMMIT;
+END UpdateAuthor;
+/
+ 
+CREATE OR REPLACE PROCEDURE DeleteAuthor(
+    p_AuthorID IN Authors.AuthorID%TYPE
+)
+IS
+BEGIN
+    DELETE FROM Authors WHERE AuthorID = p_AuthorID;
+    COMMIT;
+END DeleteAuthor;
+/
+ 
+CREATE OR REPLACE PROCEDURE InsertBook(
+    p_ISBN IN Books.ISBN%TYPE,
+    p_Title IN Books.Title%TYPE,
+    p_AuthorID IN Books.AuthorID%TYPE,
+    p_Genre IN Books.Genre%TYPE,
+    p_Price IN Books.Price%TYPE,
+    p_StockQuantity IN Books.StockQuantity%TYPE
+)
+IS
+BEGIN
+    INSERT INTO Books (ISBN, Title, AuthorID, Genre, Price, StockQuantity)
+    VALUES (p_ISBN, p_Title, p_AuthorID, p_Genre, p_Price, p_StockQuantity);
+    COMMIT;
+END InsertBook;
+/
+CREATE OR REPLACE PROCEDURE UpdateBook(
+    p_ISBN IN Books.ISBN%TYPE,
+    p_Title IN Books.Title%TYPE,
+    p_AuthorID IN Books.AuthorID%TYPE,
+    p_Genre IN Books.Genre%TYPE,
+    p_Price IN Books.Price%TYPE,
+    p_StockQuantity IN Books.StockQuantity%TYPE
+)
+IS
+BEGIN
+    UPDATE Books
+    SET Title = p_Title,
+        AuthorID = p_AuthorID,
+        Genre = p_Genre,
+        Price = p_Price,
+        StockQuantity = p_StockQuantity
+    WHERE ISBN = p_ISBN;
+    COMMIT;
+END UpdateBook;
+/
+ 
+CREATE OR REPLACE PROCEDURE DeleteBook(
+    p_ISBN IN Books.ISBN%TYPE
+)
+IS
+BEGIN
+    DELETE FROM Books WHERE ISBN = p_ISBN;
+    COMMIT;
+END DeleteBook;
+/
+-- Inserting authors
+BEGIN
+    InsertAuthor(1, 'J.K. Rowling');
+    InsertAuthor(2, 'George R.R. Martin');
+    InsertAuthor(3, 'Stephen King');
+    InsertAuthor(4, 'Harper Lee');
+END;
+/
+ 
+-- Inserting books
+BEGIN
+    InsertBook('9780545010221', 'Harry Potter and the Sorcerer''s Stone', 1, 'Fantasy', 10.99, 100);
+    InsertBook('9780553573404', 'A Game of Thrones', 2, 'Fantasy', 12.99, 80);
+    InsertBook('9781501175466', 'It', 3, 'Horror', 14.99, 120);
+    InsertBook('9780061120084', 'To Kill a Mockingbird', 4, 'Fiction', 9.99, 90);
+END;
+/
+-- Inserting customers
+BEGIN
+    INSERT INTO Customers (CustomerID, Name, Email, Address, Phone)
+    VALUES (1, 'John Doe', 'john@example.com', '123 Main St, Anytown, USA', '123-456-7890');
+ 
+    INSERT INTO Customers (CustomerID, Name, Email, Address, Phone)
+    VALUES (2, 'Jane Smith', 'jane@example.com', '456 Oak St, Othertown, USA', '987-654-3210');
+END;
+/
+-- Inserting orders
+BEGIN
+    INSERT INTO Orders (OrderID, CustomerID, OrderDate, TotalAmount, Status)
+    VALUES (1, 1, SYSDATE, 45.96, 'Shipped');
+ 
+    INSERT INTO Orders (OrderID, CustomerID, OrderDate, TotalAmount, Status)
+    VALUES (2, 2, SYSDATE, 23.97, 'Processing');
+END;
+/
+ 
+-- Inserting order details
+BEGIN
+    INSERT INTO OrderDetails (OrderDetailID, OrderID, ISBN, Quantity, UnitPrice, TotalPrice)
+    VALUES (1, 1, '9780545010221', 2, 10.99, 21.98);
+ 
+    INSERT INTO OrderDetails (OrderDetailID, OrderID, ISBN, Quantity, UnitPrice, TotalPrice)
+    VALUES (2, 1, '9780553573404', 1, 12.99, 12.99);
+ 
+    INSERT INTO OrderDetails (OrderDetailID, OrderID, ISBN, Quantity, UnitPrice, TotalPrice)
+    VALUES (3, 2, '9781501175466', 3, 14.99, 44.97);
+END;
+/SELECT b.ISBN, b.Title, b.Genre, b.Price, b.StockQuantity, a.AuthorName
+FROM Books b
+JOIN Authors a ON b.AuthorID = a.AuthorID;
+ 

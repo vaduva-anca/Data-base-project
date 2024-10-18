@@ -1,0 +1,100 @@
+create database test;
+use test;
+CREATE TABLE Clients (
+    clientID INT PRIMARY KEY AUTO_INCREMENT,
+    firstName VARCHAR(255) NOT NULL,
+    lastName VARCHAR(255) NOT NULL,
+    pin INT NOT NULL,
+    accountCode VARCHAR(255) UNIQUE NOT NULL
+);
+CREATE TABLE Transactions (
+    transactionID INT PRIMARY KEY AUTO_INCREMENT,
+    clientID INT,
+    transactionDate DATE NOT NULL,
+    transactionAmount DECIMAL(10,2) NOT NULL,
+    description VARCHAR(255),
+    FOREIGN KEY (clientID) REFERENCES Clients(clientID)
+);
+SELECT c.clientID,c.firstName,c.lastName,SUM(t.transactionAmount) AS balance FROM Clients c LEFT JOIN Transactions t ON c.clientID = t.clientID WHERE c.clientID = 2 GROUP BY    c.clientID, c.firstName, c.lastName;
+INSERT INTO Clients (firstName, lastName, pin, accountCode) VALUES
+('John', 'Doe', 1234, 'ACCT1001'),
+('Jane', 'Smith', 5678, 'ACCT1002'),
+('Alice', 'Johnson', 9101, 'ACCT1003'),
+('John', 'Doe', 1234, 'ACCT1004');
+INSERT INTO Transactions (clientID, transactionDate, transactionAmount, description) VALUES
+(1, '2023-10-10', 100.50, 'Grocery Shopping'),
+(1, '2023-10-11', 55.25, 'Gas Station'),
+(1, '2023-10-12', 220.75, 'Online Shopping'),
+(1, '2023-10-12', 53.75, 'Online Shopping'),
+(1, '2023-10-12', 123.75, 'Online Shopping'),
+(1, '2023-10-12', 641.75, 'Online Shopping');
+INSERT INTO Transactions (clientID, transactionDate, transactionAmount, description) VALUES
+(1, '2023-10-10', -120.50, 'Grocery Shopping');
+ 
+INSERT INTO Transactions (clientID, transactionDate, transactionAmount, description) VALUES
+(2, '2023-10-10', 75.00, 'Bookstore Purchase'),
+(2, '2023-10-11', 150.00, 'Restaurant Dinner');
+ 
+INSERT INTO Transactions (clientID, transactionDate, transactionAmount, description) VALUES
+(3, '2023-10-10', 300.00, 'Electronics Purchase'),
+(3, '2023-10-12', 45.50, 'Coffee Shop'),
+(3, '2023-10-12', 90.00, 'Clothes Shopping');
+ 
+SELECT
+    t.transactionID,
+    t.transactionDate,
+    t.transactionAmount,
+    t.description
+FROM
+    Clients c
+INNER JOIN
+    Transactions t ON c.clientID = t.clientID
+WHERE
+    c.firstName = 'John' AND c.lastName = 'Doe';
+ 
+ 
+INSERT INTO Transactions (clientID, transactionDate, transactionAmount, description)
+VALUES (
+    (SELECT clientID FROM Clients WHERE accountCode = 'ACCT1001'),
+    CURDATE(),
+    -100,
+    CONCAT('Transfer to ', 'destinationAccountCode')
+);
+ 
+INSERT INTO Transactions (clientID, transactionDate, transactionAmount, description)
+VALUES (
+    (SELECT clientID FROM Clients WHERE accountCode = 'ACCT1003'),
+    CURDATE(),
+    1001,
+    CONCAT('Received from ', 'sourceAccountCode')
+);
+ 
+INSERT INTO Transactions (clientID, transactionDate, transactionAmount, description)
+        VALUES (
+            (SELECT clientID FROM Clients WHERE codeTransfer = 'ACCT1003'),
+            CURDATE(),
+            900,
+            CONCAT('Received from ', 'ssss')
+        );
+ 
+#Această comandă adaugă o nouă înregistrare în tabela Transactions cu informații despre o tranzacție asociată unui client (determinat prin clientID obținut din tabela Clients pe baza codeTransfer).
+#Tranzacția are data curentă, suma de 900 și o descriere specifică. Se pare că această tranzacție reprezintă o primire de fonduri de la o sursă.
+INSERT INTO Transactions (clientID, transactionDate, transactionAmount, description)
+VALUES (
+    (SELECT clientID FROM Clients WHERE accountCode = 'ACCT1002'),
+    CURDATE(),
+    100,
+    CONCAT('Transfer to ', 'destinationAccountCode')
+);
+ 
+ 
+ 
+select * from Transactions where clientID = 1;
+ 
+select * from Transactions where clientId = 2;
+select * from Clients;
+ 
+insert into Clients (firstName,lastName,pin,accountCode) values
+('John', 'Doe', 1234, 'ACCT1005');
+insert into Clients (firstName,lastName,pin,accountCode) values
+('John', 'Doe', 1234, 'ACCT1006');

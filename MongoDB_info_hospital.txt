@@ -1,0 +1,261 @@
+// Create Collections
+db.createCollection("Patients");
+db.createCollection("Departments");
+db.createCollection("ObservationSheets");
+db.createCollection("Doctors");
+db.createCollection("Medications");
+ 
+// Insert Patients
+db.Patients.insertMany([
+  {
+    "_id": "patient1",
+    "name": "John Doe",
+    "age": 30,
+    "gender": "Male",
+    "address": "123 Main St",
+    "phone": "123-456-7890"
+  },
+  {
+    "_id": "patient2",
+    "name": "Alice Johnson",
+    "age": 28,
+    "gender": "Female",
+    "address": "456 Elm St",
+    "phone": "555-123-4567"
+  },
+  {
+    "_id": "patient3",
+    "name": "Michael Smith",
+    "age": 45,
+    "gender": "Male",
+    "address": "789 Oak Ave",
+    "phone": "555-987-6543"
+  },
+  {
+    "_id": "patient4",
+    "name": "Sophia Williams",
+    "age": 35,
+    "gender": "Female",
+    "address": "101 Pine Rd",
+    "phone": "555-876-5432"
+  }
+]);
+ 
+// Insert Departments
+db.Departments.insertMany([
+  {
+    "_id": "department1",
+    "name": "Cardiology",
+    "location": "Building A, Floor 2"
+  },
+  {
+    "_id": "department2",
+    "name": "Pediatrics",
+    "location": "Building B, Floor 3"
+  },
+  {
+    "_id": "department3",
+    "name": "Orthopedics",
+    "location": "Building C, Floor 1"
+  }
+]);
+ 
+// Insert Observation Sheets
+db.ObservationSheets.insertMany([
+  {
+    "_id": "obs_sheet1",
+    "patient_id": "patient1",
+    "department_id": "department1",
+    "observations": {
+      "blood_pressure": "120/80",
+      "heart_rate": 75,
+      "notes": "Patient is stable."
+    },
+    "date": "2024-06-01",
+    "doctor_id": "doctor1"
+  },
+  {
+    "_id": "obs_sheet2",
+    "patient_id": "patient2",
+    "department_id": "department2",
+    "observations": {
+      "temperature": "38.5",
+      "weight": 60,
+      "height": 165,
+      "notes": "Patient has flu symptoms."
+    },
+    "date": "2024-06-02",
+    "doctor_id": "doctor2"
+  },
+  {
+    "_id": "obs_sheet3",
+    "patient_id": "patient3",
+    "department_id": "department3",
+    "observations": {
+      "fracture_type": "Compound",
+      "treatment": "Surgery scheduled.",
+      "notes": "Patient needs immediate attention."
+    },
+    "date": "2024-06-03",
+    "doctor_id": "doctor3"
+  },
+  {
+    "_id": "obs_sheet4",
+    "patient_id": "patient4",
+    "department_id": "department1",
+    "observations": {
+      "blood_pressure": "130/85",
+      "heart_rate": 80,
+      "notes": "Patient requires follow-up."
+    },
+    "date": "2024-06-04",
+    "doctor_id": "doctor1"
+  }
+]);
+ 
+// Insert Doctors
+db.Doctors.insertMany([
+  {
+    "_id": "doctor1",
+    "name": "Dr. Alice Smith",
+    "specialization": "Cardiologist",
+    "department_id": "department1"
+  },
+  {
+    "_id": "doctor2",
+    "name": "Dr. Emily Brown",
+    "specialization": "Pediatrician",
+    "department_id": "department2"
+  },
+  {
+    "_id": "doctor3",
+    "name": "Dr. John Davis",
+    "specialization": "Orthopedic Surgeon",
+    "department_id": "department3"
+  },
+  {
+    "_id": "doctor4",
+    "name": "Dr. Sarah Jones",
+    "specialization": "Cardiovascular Surgeon",
+    "department_id": "department1"
+  }
+]);
+ 
+// Insert Medications
+db.Medications.insertMany([
+  {
+    "_id": "medication1",
+    "name": "Aspirin",
+    "dosage": "100mg",
+    "frequency": "Once a day"
+  },
+  {
+    "_id": "medication2",
+    "name": "Paracetamol",
+    "dosage": "500mg",
+    "frequency": "Every 6 hours"
+  },
+  {
+    "_id": "medication3",
+    "name": "Amoxicillin",
+    "dosage": "250mg",
+    "frequency": "Twice a day"
+  }
+]);
+ 
+// Update Patient's Address
+db.Patients.updateOne(
+  { "_id": "patient1" },
+  { $set: { "address": "456 New Address St" } }
+);
+ 
+// Find All Patients
+db.Patients.find();
+ 
+// Find All Departments
+db.Departments.find();
+ 
+// Find Observation Sheets for a Patient
+db.ObservationSheets.find({ "patient_id": "patient1" });
+ 
+// Find Doctors in a Department
+db.Doctors.find({ "department_id": "department1" });
+ 
+// Find Medications
+db.Medications.find();
+ 
+// Aggregate Example: Find Patients in Cardiology Department
+db.Patients.aggregate([
+  {
+    $lookup: {
+      from: "ObservationSheets",
+      localField: "_id",
+      foreignField: "patient_id",
+      as: "observation_sheets"
+    }
+  },
+  {
+    $lookup: {
+      from: "Departments",
+      localField: "observation_sheets.department_id",
+      foreignField: "_id",
+      as: "departments"
+    }
+  },
+  {
+    $match: {
+      "departments.name": "Cardiology"
+    }
+  }
+]);
+ 
+// Aggregate Example: Find Patients observed by a specific Doctor
+db.Patients.aggregate([
+  {
+    $lookup: {
+      from: "ObservationSheets",
+      localField: "_id",
+      foreignField: "patient_id",
+      as: "observation_sheets"
+    }
+  },
+  {
+    $match: {
+      "observation_sheets.doctor_id": "doctor1"
+    }
+  }
+]);
+ 
+// Aggregate Example: Find Medications prescribed for patients in Cardiology Department
+db.Medications.aggregate([
+  {
+    $lookup: {
+      from: "ObservationSheets",
+      localField: "_id",
+      foreignField: "observations.medication_ids",
+      as: "prescriptions"
+    }
+  },
+  {
+    $lookup: {
+      from: "Patients",
+      localField: "prescriptions.patient_id",
+      foreignField: "_id",
+      as: "patients"
+    }
+  },
+  {
+    $lookup: {
+      from: "Departments",
+      localField: "prescriptions.department_id",
+      foreignField: "_id",
+      as: "departments"
+    }
+  },
+  {
+    $match: {
+      "departments.name": "Cardiology"
+    }
+  }
+]);
+ 
